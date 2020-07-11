@@ -15,6 +15,10 @@ public class Weapons : MonoBehaviour
     {
         
     }
+    public void Basic()
+    {
+        //no modifier
+    }
 
     public void Oddener()
     {
@@ -40,5 +44,17 @@ public class Weapons : MonoBehaviour
             Values.currDiceRollVal += 1;
         }
 
+    }
+
+    public void Extremes()
+    {
+        if(Values.currDiceRollVal == 6)
+        {
+            Values.currDiceRollVal = 99;
+        }
+        if(Values.currDiceRollVal == 1)
+        {
+            Values.currDiceRollVal = 0;
+        }
     }
 }

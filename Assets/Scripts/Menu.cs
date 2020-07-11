@@ -9,7 +9,7 @@ public class Menu : MonoBehaviour
     [SerializeField] List<GameObject> currentWeapons;
     [SerializeField] List<GameObject> currentItems;
 
-    [SerializeField] int diceVal;
+    [SerializeField] int playerDiceVal, enemyDiceVal;
 
     [SerializeField] int playerHealth;
     [SerializeField] Text playerHealthText;
@@ -26,13 +26,14 @@ public class Menu : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerHealthText.text = playerHealth.ToString();
+        enemyHealthText.text = enemyHealth.ToString();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        MenuStateMachine();
     }
 
     public void MenuStateMachine()
@@ -45,6 +46,7 @@ public class Menu : MonoBehaviour
                 if (b0Pressed)
                 {
                     b0Pressed = false;
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.Atk;
                 }
 
@@ -52,6 +54,8 @@ public class Menu : MonoBehaviour
                 if (b1Pressed)
                 {
                     b1Pressed = false;
+                    prevMenuState = menuStates;
+
                     menuStates = MenuStates.Def;
                 }
 
@@ -59,6 +63,7 @@ public class Menu : MonoBehaviour
                 if (b2Pressed)
                 {
                     b2Pressed = false;
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.Items;
                 }
 
@@ -66,6 +71,7 @@ public class Menu : MonoBehaviour
                 if (b3Pressed)
                 {
                     b3Pressed = false;
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.Equip;
                 }
 
@@ -79,6 +85,7 @@ public class Menu : MonoBehaviour
                 {
                     b0Pressed = false;
                     selectedWeapon = currentWeapons[0];
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.RollDice;
                 }
 
@@ -87,6 +94,7 @@ public class Menu : MonoBehaviour
                 {
                     b1Pressed = false;
                     selectedWeapon = currentWeapons[1];
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.RollDice;
                 }
 
@@ -95,6 +103,7 @@ public class Menu : MonoBehaviour
                 {
                     b2Pressed = false;
                     selectedWeapon = currentWeapons[2];
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.RollDice;
                 }
 
@@ -103,6 +112,7 @@ public class Menu : MonoBehaviour
                 {
                     b3Pressed = false;
                     selectedWeapon = currentWeapons[3];
+                    prevMenuState = menuStates;
                     menuStates = MenuStates.RollDice;
                 }
 
@@ -111,9 +121,29 @@ public class Menu : MonoBehaviour
 
             case MenuStates.Def:
 
+                RollingDice();
 
+                if(Values.currDiceRollVal < Values.currEnemyDiceRollVal)
+                {
+                    playerHealth -= (Values.currEnemyDiceRollVal - Values.currDiceRollVal);
+                }
+                else if(Values.currDiceRollVal > Values.currEnemyDiceRollVal)
+                {
+                    playerHealth += (Values.currDiceRollVal - Values.currEnemyDiceRollVal);
+                }
+                else if(Values.currDiceRollVal == Values.currEnemyDiceRollVal)
+                {
+                    //nothing
+                }
 
-                break;
+                if(playerHealth <= 0)
+                {
+                    //Restart Game
+                }
+
+                menuStates = MenuStates.Begin;
+
+                    break;
 
             case MenuStates.Items:
 
@@ -140,19 +170,52 @@ public class Menu : MonoBehaviour
                 if (selectedWeapon.name == "Oddener")
                 {
                     weapons.Oddener();
-                    menuStates = MenuStates.ExecuteActions;
+                    menuStates = MenuStates.DamageEnemy;
                 }
                 if(selectedWeapon.name == "Evener")
                 {
                     weapons.Evener();
-                    menuStates = MenuStates.ExecuteActions;
+                    menuStates = MenuStates.DamageEnemy;
+                }
+                if (selectedWeapon.name == "Basic")
+                {
+                    weapons.Basic();
+                    menuStates = MenuStates.DamageEnemy;
+                }
+                if (selectedWeapon.name == "Extremes")
+                {
+                    weapons.Extremes();
+                    menuStates = MenuStates.DamageEnemy;
                 }
 
                 break;
 
-            case MenuStates.ExecuteActions:
+            case MenuStates.DamageEnemy:
 
+                enemyHealth -= Values.currDiceRollVal;
+                enemyHealthText.text = enemyHealth.ToString();
 
+                if(enemyHealth <= 0)
+                {
+                    Destroy(currEnemy);
+
+                }
+
+                menuStates = MenuStates.DamagePlayer;
+
+                break;
+
+            case MenuStates.DamagePlayer:
+
+                playerHealth -= Values.currEnemyDiceRollVal;
+                playerHealthText.text = playerHealth.ToString();
+
+                if(playerHealth <= 0)
+                {
+                    //Restart Game
+                }
+
+                menuStates = MenuStates.Begin;
 
                 break;
         }
@@ -162,39 +225,26 @@ public class Menu : MonoBehaviour
     
     public void Button0()
     {
-        switch (menuStates)
-        {
-            case MenuStates.Begin:
-
-                menuStates = MenuStates.Atk;
-
-                break;
-
-            case MenuStates.Atk:
-
-                menuStates = MenuStates.RollDice;
-
-                break;
-        }
+        b0Pressed = true;
     }
     public void Button1()
     {
-        menuStates = MenuStates.Atk;
+        b1Pressed = true;
     }
     public void Button2()
     {
-        menuStates = MenuStates.Atk;
+        b2Pressed = true;
     }
     public void Button3()
     {
-        menuStates = MenuStates.Atk;
+        b3Pressed = true;
     }
 
     public void RollingDice()
     {
-        diceVal = Random.Range(1, 7);
+        playerDiceVal = Random.Range(1, 7);
 
-        Values.currDiceRollVal = diceVal;
+        Values.currDiceRollVal = playerDiceVal;
     }
 }
 
@@ -215,5 +265,8 @@ public enum MenuStates
     Equip4,
     RollDice,
     DiceModifier,
-    ExecuteActions
+    ExecuteActions,
+    DamageEnemy,
+    DamagePlayer,
+    PlayerVictory
 }

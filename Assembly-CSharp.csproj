@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\DiceRoller.cs" />
     <Compile Include="Assets\Scripts\IWeapons.cs" />
+    <Compile Include="Assets\Scripts\Items.cs" />
     <Compile Include="Assets\Scripts\Menu.cs" />
     <Compile Include="Assets\Scripts\Values.cs" />
     <Compile Include="Assets\Scripts\Weapons.cs" />
