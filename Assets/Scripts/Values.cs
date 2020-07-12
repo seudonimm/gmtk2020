@@ -7,6 +7,13 @@ public class Values
     public static int currDiceRollVal;
     public static int currEnemyDiceRollVal;
 
+    public static int playerOGValue, enemyOGValue;
+
+    public static int evenerCharge = 1, oddenerCharge = 1 , basicCharge = 1, extremesCharge = 1;
+    public static int playerAdderCharge = 1, playerSubtracterCharge = 1, enemyAdderCharge = 1, enemySubtracterCharge = 1;
+    public static int boss1HP, boss2HP, boss3HP;
+    public static int playerHealth = 60;
+
     public static int currDiceRollValGetSet
     {
         get
@@ -33,4 +40,6 @@ public class Values
         }
     }
 
+
+    public static int EvenerCharge { get => evenerCharge; set => evenerCharge = value; }
 }

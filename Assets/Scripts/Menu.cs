@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
@@ -9,25 +10,41 @@ public class Menu : MonoBehaviour
     [SerializeField] List<GameObject> currentWeapons;
     [SerializeField] List<GameObject> currentItems;
 
-    [SerializeField] int playerDiceVal, enemyDiceVal;
+    [SerializeField] Text atkMenuHelp,beginMenuHelp, menuGuide, itemDesc;
+
+    [SerializeField] int playerDiceVal, enemyDiceVal, playerDiceOGVal, enemyDiceOGVal;
+    [SerializeField] Text playerDiceValText, enemyDiceValText, playerOGValText, enemyOGValText;
 
     [SerializeField] int playerHealth;
     [SerializeField] Text playerHealthText;
 
     [SerializeField] MenuStates menuStates, prevMenuState;
     [SerializeField] bool b0Pressed, b1Pressed, b2Pressed, b3Pressed;
-    [SerializeField] GameObject selectedWeapon;
+    [SerializeField] GameObject selectedWeapon, selectedItem;
 
     [SerializeField] GameObject currEnemy;
     [SerializeField] int enemyHealth;
     [SerializeField] Text enemyHealthText;
 
+    [SerializeField] bool bossBattle1, bossBattle2, bossBattle3;
+
+    public AudioSource hitSound;
+
+    public Map map;
     public Weapons weapons;
+    public Items items;
     // Start is called before the first frame update
     void Start()
     {
         playerHealthText.text = playerHealth.ToString();
         enemyHealthText.text = enemyHealth.ToString();
+
+        atkMenuHelp.enabled = false;
+        menuGuide.enabled = false;
+        itemDesc.enabled = false;
+
+        playerHealth = Values.playerHealth;
+
     }
 
     // Update is called once per frame
@@ -41,12 +58,17 @@ public class Menu : MonoBehaviour
         switch (menuStates)
         {
             case MenuStates.Begin:
+                menuGuide.enabled = true;
+                enemyHealthText.text = enemyHealth.ToString();
 
                 menuOptions[0].GetComponentInChildren<Text>().text = "Attack";
                 if (b0Pressed)
                 {
                     b0Pressed = false;
                     prevMenuState = menuStates;
+                    beginMenuHelp.text = "";
+                    menuGuide.enabled = false;
+
                     menuStates = MenuStates.Atk;
                 }
 
@@ -55,6 +77,8 @@ public class Menu : MonoBehaviour
                 {
                     b1Pressed = false;
                     prevMenuState = menuStates;
+                    beginMenuHelp.text = "";
+                    menuGuide.enabled = false;
 
                     menuStates = MenuStates.Def;
                 }
@@ -64,15 +88,24 @@ public class Menu : MonoBehaviour
                 {
                     b2Pressed = false;
                     prevMenuState = menuStates;
-                    menuStates = MenuStates.Items;
+                    if (Values.playerAdderCharge != 0 || Values.playerSubtracterCharge != 0 || Values.enemyAdderCharge != 0 || Values.enemySubtracterCharge != 0)
+                    {
+                        menuGuide.enabled = false;
+
+                        menuStates = MenuStates.Items;
+                    }
+                    else
+                    {
+                        beginMenuHelp.text = "NO ITEM CHARGES";
+                    }
                 }
 
-                menuOptions[3].GetComponentInChildren<Text>().text = "Change Equipment";
+                menuOptions[3].GetComponentInChildren<Text>().text = "";
                 if (b3Pressed)
                 {
                     b3Pressed = false;
-                    prevMenuState = menuStates;
-                    menuStates = MenuStates.Equip;
+                    beginMenuHelp.text = "";
+
                 }
 
 
@@ -80,39 +113,48 @@ public class Menu : MonoBehaviour
 
             case MenuStates.Atk:
 
-                menuOptions[0].GetComponentInChildren<Text>().text = currentWeapons[0].name;
+                atkMenuHelp.enabled = true;
+                menuOptions[0].GetComponentInChildren<Text>().text = currentWeapons[0].name + "   " + Values.evenerCharge;
                 if (b0Pressed)
                 {
                     b0Pressed = false;
                     selectedWeapon = currentWeapons[0];
                     prevMenuState = menuStates;
+                    atkMenuHelp.enabled = false;
+
                     menuStates = MenuStates.RollDice;
                 }
 
-                menuOptions[1].GetComponentInChildren<Text>().text = currentWeapons[1].name;
+                menuOptions[1].GetComponentInChildren<Text>().text = currentWeapons[1].name + "   " + Values.oddenerCharge;
                 if (b1Pressed)
                 {
                     b1Pressed = false;
                     selectedWeapon = currentWeapons[1];
                     prevMenuState = menuStates;
+                    atkMenuHelp.enabled = false;
+
                     menuStates = MenuStates.RollDice;
                 }
 
-                menuOptions[2].GetComponentInChildren<Text>().text = currentWeapons[2].name;
+                menuOptions[2].GetComponentInChildren<Text>().text = currentWeapons[2].name + "   " + "infinite";
                 if (b2Pressed)
                 {
                     b2Pressed = false;
                     selectedWeapon = currentWeapons[2];
                     prevMenuState = menuStates;
+                    atkMenuHelp.enabled = false;
+
                     menuStates = MenuStates.RollDice;
                 }
 
-                menuOptions[3].GetComponentInChildren<Text>().text = currentWeapons[3].name;
+                menuOptions[3].GetComponentInChildren<Text>().text = currentWeapons[3].name + "   " + Values.extremesCharge;
                 if (b3Pressed)
                 {
                     b3Pressed = false;
                     selectedWeapon = currentWeapons[3];
                     prevMenuState = menuStates;
+                    atkMenuHelp.enabled = false;
+
                     menuStates = MenuStates.RollDice;
                 }
 
@@ -122,14 +164,44 @@ public class Menu : MonoBehaviour
             case MenuStates.Def:
 
                 RollingDice();
+                if (selectedItem != null)
+                {
+                    if (selectedItem.name == "Player Adder")
+                    {
+                        items.AdderPlayer();
+                        selectedItem = null;
 
-                if(Values.currDiceRollVal < Values.currEnemyDiceRollVal)
+                    }
+                    if (selectedItem.name == "Player Subtracter")
+                    {
+                        items.SubtracterPlayer();
+                        selectedItem = null;
+
+                    }
+                    if (selectedItem.name == "Enemy Adder")
+                    {
+                        items.AdderEnemy();
+                        selectedItem = null;
+
+                    }
+                    if (selectedItem.name == "Enemy Subtracter")
+                    {
+                        items.SubtracterEnemy();
+                        selectedItem = null;
+
+                    }
+                }
+
+                if (Values.currDiceRollVal < Values.currEnemyDiceRollVal)
                 {
                     playerHealth -= (Values.currEnemyDiceRollVal - Values.currDiceRollVal);
+                    Values.playerHealth = playerHealth;
                 }
                 else if(Values.currDiceRollVal > Values.currEnemyDiceRollVal)
                 {
                     playerHealth += (Values.currDiceRollVal - Values.currEnemyDiceRollVal);
+                    Values.playerHealth = playerHealth;
+
                 }
                 else if(Values.currDiceRollVal == Values.currEnemyDiceRollVal)
                 {
@@ -140,65 +212,216 @@ public class Menu : MonoBehaviour
                 {
                     //Restart Game
                 }
+                playerHealthText.text = playerHealth.ToString();
+                Values.playerHealth = playerHealth;
 
                 menuStates = MenuStates.Begin;
 
-                    break;
+                playerDiceVal = Values.currDiceRollVal;
+                enemyDiceVal = Values.currEnemyDiceRollVal;
+                playerDiceValText.text = playerDiceVal.ToString();
+                enemyDiceValText.text = enemyDiceVal.ToString();
+
+                break;
 
             case MenuStates.Items:
+                prevMenuState = menuStates;
 
-                menuOptions[0].GetComponentInChildren<Text>().text = currentItems[0].name;
-                menuOptions[1].GetComponentInChildren<Text>().text = currentItems[1].name;
-                menuOptions[2].GetComponentInChildren<Text>().text = currentItems[2].name;
-                menuOptions[3].GetComponentInChildren<Text>().text = currentItems[3].name;
+                itemDesc.enabled = true;
 
+                menuOptions[0].GetComponentInChildren<Text>().text = currentItems[0].name + "   " + Values.playerAdderCharge;
+                if (b0Pressed)
+                {
+                    b0Pressed = false;
+                    selectedItem = currentItems[0];
+                    itemDesc.enabled = false;
+                    Values.playerAdderCharge--;
+                    menuStates = MenuStates.Begin;
+
+                }
+                menuOptions[1].GetComponentInChildren<Text>().text = currentItems[1].name + "   " + Values.playerSubtracterCharge;
+                if (b1Pressed)
+                {
+                    b1Pressed = false;
+                    selectedItem = currentItems[1];
+                    itemDesc.enabled = false;
+                    Values.playerSubtracterCharge--;
+                    menuStates = MenuStates.Begin;
+
+                }
+                menuOptions[2].GetComponentInChildren<Text>().text = currentItems[2].name + "   " + Values.enemyAdderCharge;
+                if (b2Pressed)
+                {
+                    b2Pressed = false;
+                    selectedItem = currentItems[2];
+                    Values.enemyAdderCharge--;
+                    itemDesc.enabled = false;
+                    menuStates = MenuStates.Begin;
+
+                }
+                menuOptions[3].GetComponentInChildren<Text>().text = currentItems[3].name + "   " + Values.enemySubtracterCharge;
+                if (b3Pressed)
+                {
+                    b3Pressed = false;
+                    selectedItem = currentItems[3];
+                    Values.enemySubtracterCharge--;
+                    itemDesc.enabled = false;
+                    menuStates = MenuStates.Begin;
+
+                }
+                
                 break;
 
             case MenuStates.RollDice:
                 RollingDice();
+
+
+                playerDiceValText.text = playerDiceVal.ToString();
+                enemyDiceValText.text = enemyDiceVal.ToString();
 
                 if(prevMenuState == MenuStates.Atk)
                 {
                     menuStates = MenuStates.DiceModifier;
                 }
 
-
+                if(prevMenuState == MenuStates.Items)
+                {
+                    menuStates = MenuStates.ItemDiceModifier;
+                }
                 break;
 
             case MenuStates.DiceModifier:
 
                 if (selectedWeapon.name == "Oddener")
                 {
-                    weapons.Oddener();
-                    menuStates = MenuStates.DamageEnemy;
+                    if (Values.oddenerCharge <= 0)
+                    {
+                        menuStates = MenuStates.ItemDiceModifier;
+
+                    }
+                    else
+                    {
+                        weapons.Oddener();
+                        Values.oddenerCharge--;
+                        menuStates = MenuStates.ItemDiceModifier;
+                    }
                 }
-                if(selectedWeapon.name == "Evener")
+                if (selectedWeapon.name == "Evener")
                 {
-                    weapons.Evener();
-                    menuStates = MenuStates.DamageEnemy;
+                    if (Values.EvenerCharge <= 0)
+                    {
+                        menuStates = MenuStates.ItemDiceModifier;
+
+                    }
+                    else
+                    {
+                        weapons.Evener();
+                        Values.evenerCharge--;
+                        menuStates = MenuStates.ItemDiceModifier;
+                    }
                 }
                 if (selectedWeapon.name == "Basic")
                 {
-                    weapons.Basic();
-                    menuStates = MenuStates.DamageEnemy;
+
+                    //weapons.Basic();
+
+                    menuStates = MenuStates.ItemDiceModifier;
                 }
                 if (selectedWeapon.name == "Extremes")
                 {
-                    weapons.Extremes();
+                    if (Values.extremesCharge <= 0)
+                    {
+                        menuStates = MenuStates.ItemDiceModifier;
+
+                    }
+                    else
+                    {
+                        weapons.Extremes();
+                        Values.extremesCharge--;
+                        menuStates = MenuStates.ItemDiceModifier;
+                    }
+                }
+
+                if(selectedItem == null)
+                {
                     menuStates = MenuStates.DamageEnemy;
                 }
+                playerDiceVal = Values.currDiceRollVal;
+                enemyDiceVal = Values.currEnemyDiceRollVal;
+
+                playerDiceValText.text = playerDiceVal.ToString();
+                enemyDiceValText.text = enemyDiceVal.ToString();
 
                 break;
 
-            case MenuStates.DamageEnemy:
+            case MenuStates.ItemDiceModifier:
 
+                if (selectedItem.name == "Player Adder")
+                {
+                    items.AdderPlayer();
+                    //selectedItem = null;
+                    menuStates = MenuStates.DamageEnemy;
+
+                }
+                if (selectedItem.name == "Player Subtracter")
+                {
+                    items.SubtracterPlayer();
+                    //selectedItem = null;
+                    menuStates = MenuStates.DamageEnemy;
+
+                }
+                if (selectedItem.name == "Enemy Adder")
+                {
+                    items.AdderEnemy();
+                    //selectedItem = null;
+                    menuStates = MenuStates.DamageEnemy;
+
+                }
+                if (selectedItem.name == "Enemy Subtracter")
+                {
+                    items.SubtracterEnemy();
+                    //selectedItem = null;
+                    menuStates = MenuStates.DamageEnemy;
+
+                }
+                else
+                {
+                    selectedItem = null;
+                    menuStates = MenuStates.DamageEnemy;
+
+                }
+
+                playerDiceVal = Values.currDiceRollVal;
+                enemyDiceVal = Values.currEnemyDiceRollVal;
+                playerDiceValText.text = playerDiceVal.ToString();
+                enemyDiceValText.text = enemyDiceVal.ToString();
+
+                break;
+
+
+            case MenuStates.DamageEnemy:
+                Instantiate(hitSound, transform.position, transform.rotation);
+                hitSound.Play();
                 enemyHealth -= Values.currDiceRollVal;
                 enemyHealthText.text = enemyHealth.ToString();
 
                 if(enemyHealth <= 0)
                 {
-                    Destroy(currEnemy);
-
+                    if (bossBattle1)
+                    {
+                        SceneManager.LoadScene("Map2");
+                    }
+                    if (bossBattle2)
+                    {
+                        SceneManager.LoadScene("Map3");
+                    }
+                    if (bossBattle3)
+                    {
+                        SceneManager.LoadScene("WinGame");
+                    }
+                    enemyHealth = 10;
+                    enemyHealthText.text = "0";
+                    map.EndBattle();
                 }
 
                 menuStates = MenuStates.DamagePlayer;
@@ -208,15 +431,20 @@ public class Menu : MonoBehaviour
             case MenuStates.DamagePlayer:
 
                 playerHealth -= Values.currEnemyDiceRollVal;
+                Values.playerHealth = playerHealth;
+
                 playerHealthText.text = playerHealth.ToString();
 
-                if(playerHealth <= 0)
+                if (playerHealth <= 0)
                 {
                     //Restart Game
+                    SceneManager.LoadScene("Title Scene");
                 }
+                else
+                {
 
-                menuStates = MenuStates.Begin;
-
+                    menuStates = MenuStates.Begin;
+                }
                 break;
         }
 
@@ -244,7 +472,36 @@ public class Menu : MonoBehaviour
     {
         playerDiceVal = Random.Range(1, 7);
 
+        enemyDiceVal = Random.Range(1, 7);
+
+        Values.playerOGValue = playerDiceVal;
+        Values.enemyOGValue = enemyDiceVal;
+
+        playerDiceOGVal = Values.playerOGValue;
+        enemyDiceOGVal = Values.enemyOGValue;
+
+        playerOGValText.text = playerDiceOGVal.ToString();
+        enemyOGValText.text = enemyDiceOGVal.ToString();
+        
+       
+
+        if (bossBattle1)
+        {
+            Values.currEnemyDiceRollVal += 2;
+        }
+        if (bossBattle2)
+        {
+            Values.currEnemyDiceRollVal += 3;
+        }
+        if (bossBattle3)
+        {
+            Values.currEnemyDiceRollVal += 3;
+
+        }
+
         Values.currDiceRollVal = playerDiceVal;
+
+        Values.currEnemyDiceRollVal = enemyDiceVal;
     }
 }
 
@@ -265,6 +522,7 @@ public enum MenuStates
     Equip4,
     RollDice,
     DiceModifier,
+    ItemDiceModifier,
     ExecuteActions,
     DamageEnemy,
     DamagePlayer,

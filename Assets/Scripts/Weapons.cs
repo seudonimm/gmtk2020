@@ -48,13 +48,13 @@ public class Weapons : MonoBehaviour
 
     public void Extremes()
     {
-        if(Values.currDiceRollVal == 6)
+        if(Values.currDiceRollVal > 3)
         {
-            Values.currDiceRollVal = 99;
+            Values.currDiceRollVal = 30;
         }
-        if(Values.currDiceRollVal == 1)
+        if(Values.currDiceRollVal < 4)
         {
-            Values.currDiceRollVal = 0;
+            Values.currDiceRollVal = -30;
         }
     }
 }

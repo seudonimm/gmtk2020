@@ -16,8 +16,22 @@ public class Items : MonoBehaviour
         
     }
 
-    public void Adder()
+    public void AdderPlayer()
     {
+        Values.currDiceRollVal += 2;
+    }
+    public void SubtracterPlayer()
+    {
+        Values.currDiceRollVal -= 2;
+
+    }
+    public void AdderEnemy()
+    {
+        Values.currEnemyDiceRollVal += 2;
+    }
+    public void SubtracterEnemy()
+    {
+        Values.currEnemyDiceRollVal -= 2;
 
     }
 }
