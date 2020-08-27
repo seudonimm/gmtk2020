@@ -4,13 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+//game jam code
+//control battle state of the game
 public class Menu : MonoBehaviour
 {
     [SerializeField] List<Button> menuOptions;
     [SerializeField] List<GameObject> currentWeapons;
     [SerializeField] List<GameObject> currentItems;
 
-    [SerializeField] Text atkMenuHelp,beginMenuHelp, menuGuide, itemDesc;
+    [SerializeField] Text atkMenuHelp,beginMenuHelp, menuGuide, itemDesc; //in-game help text objects
 
     [SerializeField] int playerDiceVal, enemyDiceVal, playerDiceOGVal, enemyDiceOGVal;
     [SerializeField] Text playerDiceValText, enemyDiceValText, playerOGValText, enemyOGValText;
@@ -30,20 +32,21 @@ public class Menu : MonoBehaviour
 
     public AudioSource hitSound;
 
+    //references to scripts to get methods
     public Map map;
     public Weapons weapons;
     public Items items;
+
     // Start is called before the first frame update
     void Start()
     {
-        playerHealthText.text = playerHealth.ToString();
+        playerHealthText.text = Values.playerHealth.ToString();
         enemyHealthText.text = enemyHealth.ToString();
 
         atkMenuHelp.enabled = false;
         menuGuide.enabled = false;
         itemDesc.enabled = false;
 
-        playerHealth = Values.playerHealth;
 
     }
 
@@ -194,13 +197,13 @@ public class Menu : MonoBehaviour
 
                 if (Values.currDiceRollVal < Values.currEnemyDiceRollVal)
                 {
-                    playerHealth -= (Values.currEnemyDiceRollVal - Values.currDiceRollVal);
-                    Values.playerHealth = playerHealth;
+                    Values.playerHealth -= (Values.currEnemyDiceRollVal - Values.currDiceRollVal);
+                    //Values.playerHealth = playerHealth;
                 }
                 else if(Values.currDiceRollVal > Values.currEnemyDiceRollVal)
                 {
-                    playerHealth += (Values.currDiceRollVal - Values.currEnemyDiceRollVal);
-                    Values.playerHealth = playerHealth;
+                    Values.playerHealth += (Values.currDiceRollVal - Values.currEnemyDiceRollVal);
+                    //Values.playerHealth = playerHealth;
 
                 }
                 else if(Values.currDiceRollVal == Values.currEnemyDiceRollVal)
@@ -208,12 +211,12 @@ public class Menu : MonoBehaviour
                     //nothing
                 }
 
-                if(playerHealth <= 0)
+                if(Values.playerHealth <= 0)
                 {
                     //Restart Game
                 }
-                playerHealthText.text = playerHealth.ToString();
-                Values.playerHealth = playerHealth;
+                playerHealthText.text = Values.playerHealth.ToString();
+                //Values.playerHealth = playerHealth;
 
                 menuStates = MenuStates.Begin;
 
@@ -430,14 +433,15 @@ public class Menu : MonoBehaviour
 
             case MenuStates.DamagePlayer:
 
-                playerHealth -= Values.currEnemyDiceRollVal;
-                Values.playerHealth = playerHealth;
+                Values.playerHealth -= Values.currEnemyDiceRollVal;
+                //Values.playerHealth = playerHealth;
 
-                playerHealthText.text = playerHealth.ToString();
+                playerHealthText.text = Values.playerHealth.ToString();
 
-                if (playerHealth <= 0)
+                if (Values.playerHealth <= 0)
                 {
                     //Restart Game
+                    Values.playerHealth = 60;
                     SceneManager.LoadScene("Title Scene");
                 }
                 else
@@ -468,7 +472,7 @@ public class Menu : MonoBehaviour
         b3Pressed = true;
     }
 
-    public void RollingDice()
+    public void RollingDice()//Rolls dice and sends to ui, also adjust boss dice rolls
     {
         playerDiceVal = Random.Range(1, 7);
 
@@ -512,14 +516,6 @@ public enum MenuStates
     Def,
     Equip,
     Items,
-    Item1,
-    Item2,
-    Item3,
-    Item4,
-    Equip1,
-    Equip2,
-    Equip3,
-    Equip4,
     RollDice,
     DiceModifier,
     ItemDiceModifier,

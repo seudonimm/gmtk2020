@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//random generates the path for the level by choosing what each block does
 public class PathBlock : MonoBehaviour
 {
     [SerializeField] GameObject pathBlock;

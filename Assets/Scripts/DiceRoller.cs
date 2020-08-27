@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//rolls a random number 1-6
 public class DiceRoller : MonoBehaviour
 {
     //[SerializeField] GameObject dice;

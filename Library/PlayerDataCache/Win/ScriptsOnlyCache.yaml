@@ -1073,4 +1073,4 @@ ScriptsOnlyBuild:
   - Assets/Scenes/Map3.unity
   - Assets/Scenes/Boss3.unity
   - Assets/Scenes/WinGame.unity
-  playerPath: C:/Users/Jawad Usman/Documents/GitHub/gmtk2020/Build/RNGRPGV1/gmtk2020.exe
+  playerPath: C:/Users/Jawad Usman/Documents/GitHub/gmtk2020/Build/RNGRPG1.1/gmtk2020.exe

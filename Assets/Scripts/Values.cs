@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//gets and returns values for reference and UI
 public class Values
 {
     public static int currDiceRollVal;
     public static int currEnemyDiceRollVal;
 
-    public static int playerOGValue, enemyOGValue;
+    public static int playerOGValue, enemyOGValue; //OG = unmodified dice roll
 
     public static int evenerCharge = 1, oddenerCharge = 1 , basicCharge = 1, extremesCharge = 1;
     public static int playerAdderCharge = 1, playerSubtracterCharge = 1, enemyAdderCharge = 1, enemySubtracterCharge = 1;

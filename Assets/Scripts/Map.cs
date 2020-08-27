@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+//game jam code
+//controls map state of the game
 public class Map : MonoBehaviour
 {
     [SerializeField] GameObject player;
@@ -51,12 +53,9 @@ public class Map : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        hit = Physics2D.Linecast(rayPoint1.position, rayPoint2.position);
+        hit = Physics2D.Linecast(rayPoint1.position, rayPoint2.position); //raycast becasue collider doesnt activate when teleported into
 
         MapStateMachine();
-
-        //playerRB.velocity = new Vector2(1, 0);
-        //playerRB.velocity = new Vector2(-1, 0);
     }
 
     void MapStateMachine()
@@ -109,7 +108,7 @@ public class Map : MonoBehaviour
                 
                 break;
 
-            case MapStates.ExecuteBlockAction:
+            case MapStates.ExecuteBlockAction: //sends to correct state depending on which block of the map you stopped on
 
                 if (hit.collider.CompareTag("EnemyBlock"))
                 {
@@ -139,7 +138,7 @@ public class Map : MonoBehaviour
 
                 break;
 
-            case MapStates.Battle:
+            case MapStates.Battle: //opens battle state, see menu script
 
                 battleScene.SetActive(true);
 
@@ -147,7 +146,7 @@ public class Map : MonoBehaviour
 
                 break;
 
-            case MapStates.ItemGet:
+            case MapStates.ItemGet: //get random item
                 getScene.SetActive(true);
 
                 //Values.currItemList.Add(allItemsList[rand]);
@@ -176,17 +175,11 @@ public class Map : MonoBehaviour
                 gotItemOrWeapon = true;
 
                 buttonText.text = "Click to Continue";
-                if (buttonPressed)
-                {
-                    buttonPressed = false;
-                    getText.text = "";
-                    getScene.SetActive(false);
-                    mapStates = MapStates.Standing;
-                }
+                Reset();
 
                 break;
 
-            case MapStates.WeaponGet:
+            case MapStates.WeaponGet://get random weapon
                 getScene.SetActive(true);
 
                 //Values.currWeaponList.Add(allWeaponsList[rand]);
@@ -212,19 +205,12 @@ public class Map : MonoBehaviour
                 gotItemOrWeapon = true;
 
                 buttonText.text = "Click to Continue";
-                if (buttonPressed)
-                {
-                    gotItemOrWeapon = false;
-                    buttonPressed = false;
-                    getText.text = "";
-                    getScene.SetActive(false);
-                    mapStates = MapStates.Standing;
-                }
+                Reset();
 
 
                 break;
 
-            case MapStates.Boss:
+            case MapStates.Boss: //sends to boss depending on level
                 if (map1)
                 {
                     SceneManager.LoadScene("Boss1");
@@ -241,30 +227,18 @@ public class Map : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D col)
+    private void Reset()
     {
-
-        //if (hit.collider.CompareTag("EnemyBlock"))
-        //{
-        //    Debug.Log("btl");
-        //    //mapStates = MapStates.Battle;
-        //}
-        //else if (hit.collider.CompareTag("ItemBlock"))
-        //{
-        //    Debug.Log("itm");
-        //}
-        //else if (hit.collider.CompareTag("WeaponBlock"))
-        //{
-        //    Debug.Log("wep");
-        //}
-        //else if (hit.collider.CompareTag("BossBlock"))
-        //{
-        //    Debug.Log("bss");
-        //}
-
+        if (buttonPressed)
+        {
+            gotItemOrWeapon = false;
+            buttonPressed = false;
+            getText.text = "";
+            getScene.SetActive(false);
+            mapStates = MapStates.Standing;
+        }
 
     }
-
     public void EndBattle()
     {
         battleScene.SetActive(false);
